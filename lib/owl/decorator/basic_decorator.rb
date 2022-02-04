@@ -7,7 +7,7 @@ class BasicDecorator < SimpleDelegator
     protected
       def decorates_associated(*association_names, with: name.demodulize)
         association_names.each do |association_name|
-          association = parent.reflections[association_name.to_s]
+          association = module_parent.reflections[association_name.to_s]
           association_class = (association.options[:class_name] || association.name.to_s.camelize.singularize).safe_constantize
           decorator_class = association_class.const_get(with)
 
