@@ -3,9 +3,7 @@ require_relative 'destroy_restriction'
 class ApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
 
-  if Rails.configuration.database_configuration[Rails.env]["primary_replica"].present?
-    connects_to database: { writing: :primary, reading: :primary_replica }
-  end
+  connects_to database: { writing: :primary, reading: :primary_replica }
 
   include DestroyRestriction
 
