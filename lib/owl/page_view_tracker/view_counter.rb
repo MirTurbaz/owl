@@ -1,4 +1,4 @@
-require_relative '../application_record'
+require_relative '../owl_application_record'
 
 # == Schema Information
 #
@@ -12,7 +12,7 @@ require_relative '../application_record'
 #  bot_views_count :integer          default(0), not null
 #
 
-class ViewCounter < ApplicationRecord
+class ViewCounter < OwlApplicationRecord
   belongs_to :item, polymorphic: true
 
   validates_uniqueness_of :item_id, scope: [:item_type, :date]

@@ -1,9 +1,7 @@
 require_relative 'destroy_restriction'
 
-class ApplicationRecord < ActiveRecord::Base
+class OwlApplicationRecord < ActiveRecord::Base
   self.abstract_class = true
-
-  connects_to database: { writing: :primary, reading: :primary_replica }
 
   include DestroyRestriction
 
