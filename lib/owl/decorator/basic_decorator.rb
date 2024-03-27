@@ -43,6 +43,10 @@ class BasicDecorator < SimpleDelegator
     end
   end
 
+  def present
+    presenter_class.new(self)
+  end
+
   def is_a?(arg)
     super || __getobj__.is_a?(arg)
   end
