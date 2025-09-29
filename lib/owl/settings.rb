@@ -5,18 +5,23 @@ class Settings
   # @param [String] table название таблицы
   def initialize(connection, table: 'settings')
     @connection, @table = connection, table
+    @cache = {}
+    @all_cached = false
   end
 
   # Получает значение из таблицы настроек по ключу
   # @param [String, Symbol] key
   # @return [Object]
   def [](key)
+    return @cache[key] if @cache.key?(key)
+
     query = <<-SQL
       SELECT value FROM #{@table} WHERE key = #{@connection.quote(key)}
     SQL
     result = @connection.execute(query).to_a.first
-    return unless result
-    YAML.load(result['value'])
+    value = result ? YAML.load(result['value']) : nil
+    @cache[key] = value
+    value
   end
 
   # Задаёт значение соответствующему ключу в таблице настроек
@@ -44,18 +49,36 @@ class Settings
     #   UPDATE SET value = #{quoted_value} WHERE #{@table}.key = #{quoted_key}
     # SQL
     @connection.execute(query)
+
+    @cache[key] = value
+    @all_cached = false
   end
 
   def to_h
+    return @all_cache if @all_cached
+
     query = <<-SQL
       SELECT key, value FROM #{@table}
     SQL
     result = @connection.execute(query).to_a
-    result.map { |setting| { setting['key'] => YAML.load(setting['value']) } }.reduce(:merge).with_indifferent_access
+
+    @all_cache = result.map { |setting|
+      key = setting['key']
+      value = YAML.load(setting['value'])
+
+      @cache[key] = value
+
+      { key => value }
+    }.reduce(:merge).with_indifferent_access
+
+    @all_cached = true
+    @all_cache
   end
 
   private
     def key_exists?(key)
+      return @cache.key?(key) if @all_cached
+
       quoted_key = @connection.quote(key)
 
       query = <<-SQL
